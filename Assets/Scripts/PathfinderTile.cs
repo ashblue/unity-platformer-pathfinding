@@ -15,8 +15,8 @@ public class PathfinderTile : MonoBehaviour {
 	public int clearance;								
 	public LayerMask whatIsCollision;					// Collidable entities
 	public bool ledge;
-
-	public Vector3 xy;
+	public Vector2 xy;
+	public List<PathfinderLink> links = new List<PathfinderLink>();
 
 	public void Init (int x, int y, float sizeVal, Vector3 offset) {
 		xy = new Vector2(x, y);
@@ -38,7 +38,6 @@ public class PathfinderTile : MonoBehaviour {
 		bool overlap = Physics2D.OverlapArea(topLeft, bottomRight, whatIsCollision);
 		if (overlap) {
 			SetCost("closed");
-
 		}
 	}
 
@@ -59,11 +58,24 @@ public class PathfinderTile : MonoBehaviour {
 			GetComponent<SpriteRenderer>().color = Color.yellow;
 	}
 
+	public void AddLink (PathfinderTile target, int weight, int distance) {
+		PathfinderLink link = new PathfinderLink();
+		link.target = target;
+		link.weight = weight;
+		link.distance = distance;
+		links.Add(link);
+
+		Debug.Log ("Linked");
+	}
+
 	void OnGUI () {
 		Vector3 pos = Camera.main.WorldToScreenPoint(transform.position + new Vector3(-size / 3, size / 3, 0));
 		GUI.Label(new Rect(pos.x, Screen.height - pos.y, 20, 20), clearance.ToString());      
+	}
 
-
-//		GUI.TextArea(new Rect(pos.x, pos.y, 20, 20), clearance.ToString());
+	void Update () {
+		for (int i = 0, l = links.Count; i < l; i++) {
+			Debug.DrawLine(transform.position, links[i].target.transform.position, Color.white);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 // @TODO Rename PathfinderMap
 // @TODO Feels like this should be in a namespace
@@ -50,20 +51,46 @@ public class PathfinderGrid : MonoBehaviour {
 		pathClearance.Init(this, pathCollision);
 
 		// Find all valid pathways for gravity based pathfinding
+		List<PathfinderTile> ledges = new List<PathfinderTile>();
+		List<PathfinderTile> corners = new List<PathfinderTile>();
 		for (int y = 0, lY = GetHeightInTiles(); y < lY; y++) {
 			for (int x = 0, lX = GetWidthInTiles(); x < lX; x++) {
 				PathfinderTile tile = GetTile(x, y);
-				if (tile.cost == 1 && Blocked(x, y + 1) && y + 1 != lY) 	// If the bottom ledge is blocked or bottom of y axis
+				if (tile.cost == 1 && Blocked(x, y + 1) && y + 1 != lY) {	// If the bottom ledge is blocked or bottom of y axis
 					tile.SetLedge(true);
-					// @TODO Validate if a corner and not just a normal ledge
+					ledges.Add(tile);
+
+					if (!Blocked(x - 1, y) && !Blocked(x + 1, y)) 
+						corners.Add(tile);
+				}
 			}
 		}
 
-		// For each ledge add a link to all ledge neighbors
+		// For each ledge, add a link to all ledge neighbors
+		for (int i = 0, l = ledges.Count; i < l; i++) {
+			int x = (int)ledges[i].xy.x;
+			int y = (int)ledges[i].xy.y;
+
+			// Left neighbor check
+			if (!Blocked(x - 1, y)) {
+				PathfinderTile tile = GetTile(x - 1, y);
+				if (tile.ledge) ledges[i].AddLink(tile, 0, 1);
+			}
+
+			// Right neighbor check
+			if (!Blocked(x + 1, y)) {
+				PathfinderTile tile = GetTile(x + 1, y);
+				if (tile.ledge) ledges[i].AddLink(tile, 0, 1);
+			}
+		}
 
 		// Find ledge corner fall points
+		// Raycast at specific angle to check for clear fall point
+		// If valid create a one way link
 
 		// Find ledge corner runoff points
+		// Also raycast
+		// If valid create a 2 way link
 
 		// From all ledge corners calculate jump parabola and link if successful
 		// Check for clearance by fudging an extra jump arc above to simulate clearance
