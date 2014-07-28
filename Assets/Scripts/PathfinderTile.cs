@@ -57,11 +57,12 @@ public class PathfinderTile : MonoBehaviour {
 			GetComponent<SpriteRenderer>().color = Color.yellow;
 	}
 
-	public void AddLink (PathfinderTile target, int weight, int distance) {
+	public void AddLink (PathfinderTile target, int weight, int distance, string type = "ground") {
 		PathfinderLink link = new PathfinderLink();
 		link.target = target;
 		link.weight = weight;
 		link.distance = distance;
+		link.type = type;
 		links.Add(link);
 	}
 
@@ -71,8 +72,10 @@ public class PathfinderTile : MonoBehaviour {
 	}
 
 	void Update () {
+		Color color = Color.white;
 		for (int i = 0, l = links.Count; i < l; i++) {
-			Debug.DrawLine(transform.position, links[i].target.transform.position, Color.white);
+			if (links[i].type == "fall") color = Color.yellow;
+			Debug.DrawLine(transform.position, links[i].target.transform.position, color);
 		}
 	}
 }

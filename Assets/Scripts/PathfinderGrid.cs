@@ -96,18 +96,17 @@ public class PathfinderGrid : MonoBehaviour {
 			// Step over the facing direction 1 tile
 			PathfinderTile overhang = GetTile((int)corners[i].xy.x + direction, (int)corners[i].xy.y);
 
-			// Shoot a raycast straight down to the end of the boundary
+			// Shoot a raycast straight down to the end of the boundary to look for a fall
 			RaycastHit2D hit = Physics2D.Raycast(
 				overhang.transform.position, 
 				-Vector2.up, 
 				(GetHeightInTiles() - overhang.xy.y) * tileSize,
 				whatIsCollision);
 
-			// If we hit something add a link at the collision location
+			// If we hit something add a fall link at the hit target
 			if (hit.collider) {
-				// Translate hit position into x y coordinates
-				// Get the tile at the hit position
-				// Record a one way link and attach it
+				PathfinderTile tileTarget = GetTileByPos(hit.point);
+				corners[i].AddLink(tileTarget, 0, 1, "fall");
 			}
 
 			// Find corner runoff points
@@ -119,6 +118,14 @@ public class PathfinderGrid : MonoBehaviour {
 		// Check for clearance by fudging an extra jump arc above to simulate clearance
 		// Needs to be a real physics jump arc
 		// Raycast along the jump arc for collision tests
+	}
+
+	// Turn real world coordinates into a tile postiion
+	public PathfinderTile GetTileByPos (Vector3 pos) {
+		float x = Mathf.Floor(Mathf.Abs(boxPos.x - pos.x) / tileSize);
+		float y = Mathf.Floor(Mathf.Abs(boxPos.y - pos.y) / tileSize);
+
+		return GetTile((int)x, (int)y);
 	}
 
 	public int GetWidthInTiles () {
