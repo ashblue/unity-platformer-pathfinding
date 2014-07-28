@@ -17,7 +17,8 @@ public class PathfinderGrid : MonoBehaviour {
 	public PathfinderTile[,] grid;
 	public GameObject tilePrefab;
 	public LayerMask whatIsCollision;
-	
+
+	// @TODO For debugging purposes we need to be able to re-poll the entire scene every 1 second
 	void Awake () {
 		// Get the required size data
 		boundingBox = GameObject.Find("BoundingBox");
@@ -107,13 +108,24 @@ public class PathfinderGrid : MonoBehaviour {
 			if (hit.collider) {
 				PathfinderTile tileTarget = GetTileByPos(hit.point);
 				int distance = (int)Mathf.Floor(Vector3.Distance(corners[i].transform.position, tileTarget.transform.position));
-				Debug.Log (distance);
 				corners[i].AddLink(tileTarget, 1, distance, "fall");
 			}
 
-			// Find corner runoff points
-			// Also raycast
+			// Find corner runoff point
+			hit = Physics2D.Raycast(
+				overhang.transform.position,
+				new Vector2(0.2f * direction, -0.5f),
+				(GetHeightInTiles() - overhang.xy.y) * tileSize,
+				whatIsCollision
+			);
+
 			// If valid create a 2 way link
+			if (hit.collider) {
+				PathfinderTile tileTarget = GetTileByPos(hit.point);
+				int distance = (int)Mathf.Floor(Vector3.Distance(corners[i].transform.position, tileTarget.transform.position));
+				corners[i].AddLink(tileTarget, 1, distance, "runoff");
+				tileTarget.AddLink(corners[i], 1, distance, "runoff"); // @TODO Should probably be runoff jump
+			}
 		}
 
 		// From all ledge corners calculate jump parabola and link if successful
