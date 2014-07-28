@@ -106,7 +106,9 @@ public class PathfinderGrid : MonoBehaviour {
 			// If we hit something add a fall link at the hit target
 			if (hit.collider) {
 				PathfinderTile tileTarget = GetTileByPos(hit.point);
-				corners[i].AddLink(tileTarget, 0, 1, "fall");
+				int distance = (int)Mathf.Floor(Vector3.Distance(corners[i].transform.position, tileTarget.transform.position));
+				Debug.Log (distance);
+				corners[i].AddLink(tileTarget, 1, distance, "fall");
 			}
 
 			// Find corner runoff points
