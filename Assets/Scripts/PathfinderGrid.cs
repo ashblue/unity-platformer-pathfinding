@@ -16,7 +16,8 @@ public class PathfinderGrid : MonoBehaviour {
 	public float tileSize = 1;
 	public PathfinderTile[,] grid;
 	public GameObject tilePrefab;
-
+	public LayerMask whatIsCollision;
+	
 	void Awake () {
 		// Get the required size data
 		boundingBox = GameObject.Find("BoundingBox");
@@ -43,10 +44,11 @@ public class PathfinderGrid : MonoBehaviour {
 		// Populate collision data
 		for (int y = 0, l = GetHeightInTiles(); y < l; y++) {
 			for (int x = 0, lX = GetWidthInTiles(); x < lX; x++) {
-				GetTile(x, y).UpdateCollision();
+				GetTile(x, y).UpdateCollision(whatIsCollision);
 			}
 		}
-		
+
+		// Run clearanc and collision setup here since collision data is ready
 		pathCollision.Init(this);
 		pathClearance.Init(this, pathCollision);
 
@@ -60,7 +62,7 @@ public class PathfinderGrid : MonoBehaviour {
 					tile.SetLedge(true);
 					ledges.Add(tile);
 
-					if (!Blocked(x - 1, y) && !Blocked(x + 1, y)) 
+					if (!Blocked(x - 1, y + 1) || !Blocked(x + 1, y + 1)) 
 						corners.Add(tile);
 				}
 			}
@@ -87,10 +89,31 @@ public class PathfinderGrid : MonoBehaviour {
 		// Find ledge corner fall points
 		// Raycast at specific angle to check for clear fall point
 		// If valid create a one way link
+		for (int i = 0, l = corners.Count; i < l; i++) {
+			// Discover the direction the tile is facing
+			int direction = Blocked((int)corners[i].xy.x - 1, (int)corners[i].xy.y + 1) ? 1 : -1;
 
-		// Find ledge corner runoff points
-		// Also raycast
-		// If valid create a 2 way link
+			// Step over the facing direction 1 tile
+			PathfinderTile overhang = GetTile((int)corners[i].xy.x + direction, (int)corners[i].xy.y);
+
+			// Shoot a raycast straight down to the end of the boundary
+			RaycastHit2D hit = Physics2D.Raycast(
+				overhang.transform.position, 
+				-Vector2.up, 
+				(GetHeightInTiles() - overhang.xy.y) * tileSize,
+				whatIsCollision);
+
+			// If we hit something add a link at the collision location
+			if (hit.collider) {
+				// Translate hit position into x y coordinates
+				// Get the tile at the hit position
+				// Record a one way link and attach it
+			}
+
+			// Find corner runoff points
+			// Also raycast
+			// If valid create a 2 way link
+		}
 
 		// From all ledge corners calculate jump parabola and link if successful
 		// Check for clearance by fudging an extra jump arc above to simulate clearance

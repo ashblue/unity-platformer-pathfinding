@@ -13,7 +13,6 @@ public class PathfinderTile : MonoBehaviour {
 	public Color closed = new Color(255, 0, 0, 1);   	// Tile is not traversable
 	public int cost = COST["open"];                     // Movement cost 
 	public int clearance;								
-	public LayerMask whatIsCollision;					// Collidable entities
 	public bool ledge;
 	public Vector2 xy;
 	public List<PathfinderLink> links = new List<PathfinderLink>();
@@ -27,7 +26,7 @@ public class PathfinderTile : MonoBehaviour {
 		transform.localScale = new Vector3(size, size, 0);
 	}
 
-	public void UpdateCollision () {
+	public void UpdateCollision (LayerMask whatIsCollision) {
 		// Run an overlap test
 		// http://docs.unity3d.com/ScriptReference/Physics2D.OverlapArea.html
 		// Physics2D.OverlapArea
@@ -64,8 +63,6 @@ public class PathfinderTile : MonoBehaviour {
 		link.weight = weight;
 		link.distance = distance;
 		links.Add(link);
-
-		Debug.Log ("Linked");
 	}
 
 	void OnGUI () {
