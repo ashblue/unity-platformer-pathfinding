@@ -76,6 +76,8 @@ public class PathfinderTile : MonoBehaviour {
 		for (int i = 0, l = links.Count; i < l; i++) {
 			if (links[i].type == "fall") color = Color.yellow;
 			if (links[i].type == "runoff") color = Color.blue;
+			if (links[i].type == "jump") color = Color.magenta;
+			
 			Debug.DrawLine(transform.position, links[i].target.transform.position, color);
 		}
 	}

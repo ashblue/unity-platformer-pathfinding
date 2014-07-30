@@ -17,6 +17,8 @@ public class PathfinderGrid : MonoBehaviour {
 	public PathfinderTile[,] grid;
 	public GameObject tilePrefab;
 	public LayerMask whatIsCollision;
+	public LayerMask whatIsJumpPoint;
+	public float jumpDistance = 4; // Max jump distance from a ledge
 
 	public bool debug = false; // Allows for live debug mode, not recommended in production mode (expendsive)
 	public float debugRefresh = 1;
@@ -26,6 +28,7 @@ public class PathfinderGrid : MonoBehaviour {
 		Init();
 	}
 
+	// @TODO Compartmentalise these components into separate files
 	void Init () {
 		// Get the required size data
 		boundingBox = GameObject.Find("BoundingBox");
@@ -95,6 +98,7 @@ public class PathfinderGrid : MonoBehaviour {
 		// Find ledge corner fall points
 		// Raycast at specific angle to check for clear fall point
 		// If valid create a one way link
+		List<PlatformLedgePoint> ledgePoints = new List<PlatformLedgePoint>();
 		for (int i = 0, l = corners.Count; i < l; i++) {
 			// Discover the direction the tile is facing
 			int direction = Blocked((int)corners[i].xy.x - 1, (int)corners[i].xy.y + 1) ? 1 : -1;
@@ -131,12 +135,55 @@ public class PathfinderGrid : MonoBehaviour {
 				corners[i].AddLink(tileTarget, 1, distance, "runoff");
 				tileTarget.AddLink(corners[i], 1, distance, "runoff"); // @TODO Should probably be runoff jump
 			}
+
+			// Creata a ledge point for evaluating corner jumps
+			Transform targetTrans = GetTile((int)corners[i].xy.x, (int)corners[i].xy.y).transform;
+			GameObject pointObj = (GameObject)Instantiate(Resources.Load("PlatformLedge"));
+			PlatformLedgePoint point = pointObj.GetComponent<PlatformLedgePoint>();
+			pointObj.transform.position = targetTrans.position;
+			point.x = (int)corners[i].xy.x;
+			point.y = (int)corners[i].xy.y;
+			point.direction = direction;
+			ledgePoints.Add(point);
+
 		}
-		
-		// From all ledge corners calculate jump parabola and link if successful
-		// Check for clearance by fudging an extra jump arc above to simulate clearance
-		// Needs to be a real physics jump arc
-		// Raycast along the jump arc for collision tests
+
+		// Loop through all ledge corners
+		for (int i = 0, l = ledgePoints.Count; i < l; i++) {
+			RaycastHit2D[] jumpPoints = Physics2D.BoxCastAll(
+				ledgePoints[i].transform.position + new Vector3((jumpDistance / 2) * ledgePoints[i].direction, 0, 0),
+				new Vector2(jumpDistance, jumpDistance),
+				0,
+				Vector2.up * -0.1f, // Shift down slightly to activate the collision test
+				Mathf.Infinity,
+				whatIsJumpPoint);
+
+
+			for (int j = 0, jL = jumpPoints.Length; j < jL; j++) {
+				int distance = (int)Mathf.Floor(Vector3.Distance(ledgePoints[i].transform.position, jumpPoints[j].transform.position));
+
+				ledgePoints[i].enabled = false;
+
+				RaycastHit2D hit = Physics2D.Raycast(
+					ledgePoints[i].transform.position,
+					new Vector2(0.2f * ledgePoints[i].direction, -0.5f),
+					distance,
+					whatIsCollision);
+
+				ledgePoints[i].enabled = true;
+
+				if (hit.collider) continue;
+
+				PathfinderTile tile = GetTile(ledgePoints[i].x, ledgePoints[i].y);
+				PlatformLedgePoint tileTarget = jumpPoints[j].collider.GetComponent<PlatformLedgePoint>();
+				tile.AddLink(GetTile(tileTarget.x, tileTarget.y), 2, distance, "jump");
+			}
+		}
+
+		// @TODO Cleanup leftover ledge corner colliders
+		for (int i = 0, l = ledgePoints.Count; i < l; i++) {
+			Destroy(ledgePoints[i].gameObject);
+		}
 	}
 
 	// Reset pathfinder back to ground zero
