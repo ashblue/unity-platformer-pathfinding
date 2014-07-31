@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+// Loops through all existing tiles and updates the clearance values
 public class PathfinderClearance {
-	PathfinderGrid pathData;
+	PathfinderMap pathData;
 	PathfinderCollision gridCollision;
 
-	public void Init (PathfinderGrid data, PathfinderCollision collision) {
+	public PathfinderClearance (PathfinderMap data, PathfinderCollision collision) {
 		pathData = data;
 		gridCollision = collision;
 		MapUpdateClearance();

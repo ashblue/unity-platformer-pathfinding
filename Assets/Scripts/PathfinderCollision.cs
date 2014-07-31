@@ -2,9 +2,9 @@
 using System.Collections;
 
 public class PathfinderCollision {
-	PathfinderGrid grid;
+	PathfinderMap grid;
 
-	public void Init (PathfinderGrid gridTarget) {
+	public void Init (PathfinderMap gridTarget) {
 		grid = gridTarget;
 	}
 

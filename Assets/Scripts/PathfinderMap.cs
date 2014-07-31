@@ -2,15 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 
-// @TODO Rename PathfinderMap
 // @TODO Feels like this should be in a namespace
-public class PathfinderGrid : MonoBehaviour {
+public class PathfinderMap : MonoBehaviour {
 	GameObject boundingBox;
 	Vector3 boxPos;
 	float boxWidth;
 	float boxHeight;
 
-	PathfinderClearance pathClearance = new PathfinderClearance();
+	PathfinderClearance pathClearance;
 	PathfinderCollision pathCollision = new PathfinderCollision();
 
 	public float tileSize = 1;
@@ -59,7 +58,7 @@ public class PathfinderGrid : MonoBehaviour {
 		
 		// Run clearance and collision setup here since collision data is ready
 		pathCollision.Init(this);
-		pathClearance.Init(this, pathCollision);
+		pathClearance = new PathfinderClearance(this, pathCollision);
 		
 		// Find all valid pathways for gravity based pathfinding
 		List<PathfinderTile> ledges = new List<PathfinderTile>();
