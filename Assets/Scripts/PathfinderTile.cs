@@ -19,11 +19,12 @@ public class PathfinderTileCost {
 
 public class PathfinderTile : MonoBehaviour {
 	static Dictionary<string, PathfinderTileCost> COST = new Dictionary<string, PathfinderTileCost>() {
-		{ "closed", new PathfinderTileCost("closed", 0, Color.green) },
-		{ "open", new PathfinderTileCost("open", 1, Color.red) }
+		{ "closed", new PathfinderTileCost("closed", 0, Color.red) },
+		{ "open", new PathfinderTileCost("open", 1, Color.green) }
 	};
 
 	float size;											// Size in Unity units (used for placement)
+	bool debug;
 
 	public Color open = new Color(0, 255, 0, 1);     	// Color displayed when tile is available
 	public Color closed = new Color(255, 0, 0, 1);   	// Tile is not traversable
@@ -34,10 +35,17 @@ public class PathfinderTile : MonoBehaviour {
 	public int y;
 	public List<PathfinderLink> links = new List<PathfinderLink>();
 
-	public void Init (int xVal, int yVal, float sizeVal, Vector3 offset) {
+	public void Init (int xVal, int yVal, float sizeVal, Vector3 offset, bool debugging = false) {
 		x = xVal;
 		y = yVal;
 		size = sizeVal;
+		debug = debugging;
+
+		if (debug) {
+			GetComponent<SpriteRenderer>().enabled = true;
+		} else {
+			GetComponent<SpriteRenderer>().enabled = false;
+		}
 
 		GetComponent<SpriteRenderer>().color = open;
 		transform.position = new Vector3((x * size) + offset.x + (size / 2), -(y * size) + offset.y + (size / 2), 0);
@@ -76,11 +84,13 @@ public class PathfinderTile : MonoBehaviour {
 	}
 
 	void OnGUI () {
+		if (!debug) return;
 		Vector3 pos = Camera.main.WorldToScreenPoint(transform.position + new Vector3(-size / 3, size / 3, 0));
 		GUI.Label(new Rect(pos.x, Screen.height - pos.y, 20, 20), clearance.ToString());      
 	}
 
 	void Update () {
+		if (!debug) return;
 		for (int i = 0, l = links.Count; i < l; i++) {
 			Debug.DrawLine(transform.position, 
 			               links[i].target.transform.position, 

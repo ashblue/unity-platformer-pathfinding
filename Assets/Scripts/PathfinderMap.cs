@@ -21,6 +21,7 @@ public class PathfinderMap : MonoBehaviour {
 	public float jumpDistance = 4; // Max jump distance from a ledge
 
 	public bool debug = false; // Allows for live debug mode, not recommended in production mode (expendsive)
+	public bool debugLines = true; // Show debug lines
 	public float debugRefresh = 1;
 	float debugRefreshCount = 0;
 
@@ -46,7 +47,7 @@ public class PathfinderMap : MonoBehaviour {
 				GameObject newTile = (GameObject)Instantiate(tilePrefab);
 				grid[y, x] = newTile.GetComponent<PathfinderTile>();
 				newTile.transform.parent = transform;
-				grid[y, x].Init(x, y, tileSize, boxPos);
+				grid[y, x].Init(x, y, tileSize, boxPos, debugLines);
 			}
 		}
 		
@@ -154,17 +155,16 @@ public class PathfinderMap : MonoBehaviour {
 				whatIsJumpPoint);
 
 			for (int j = 0, jL = jumpPoints.Length; j < jL; j++) {
-				Debug.Log(jumpPoints[j].transform.position);
 				int distance = (int)Mathf.Floor(Vector3.Distance(ledgePoints[i].transform.position, jumpPoints[j].transform.position));
 
 				RaycastHit2D hit = Physics2D.Raycast(
 					ledgePoints[i].transform.position,
-					(ledgePoints[i].transform.position - jumpPoints[j].transform.position).normalized,
-					jumpDistance,
+//					(ledgePoints[i].transform.position - jumpPoints[j].transform.position).normalized,
+					(jumpPoints[j].transform.position - ledgePoints[i].transform.position).normalized,
+					Vector3.Distance(ledgePoints[i].transform.position, jumpPoints[j].transform.position),
 					whatIsCollision);
 
 				if (hit.collider) {
-					Debug.Log(hit.collider.transform.position);
 					continue;
 				}
 
