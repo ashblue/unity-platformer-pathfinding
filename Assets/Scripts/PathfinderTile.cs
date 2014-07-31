@@ -2,16 +2,32 @@
 using System.Collections;
 using System.Collections.Generic;
 
+public class PathfinderTileCost {
+	static float colorAlpha = 0.9f;
+	public string name;
+	public int weight;
+	public Color color;
+
+	public PathfinderTileCost (string costName, int costWeight, Color costColor) {
+		name = costName;
+		weight = costWeight;
+		
+		costColor.a = colorAlpha;
+		color = costColor;
+	}
+}
+
 public class PathfinderTile : MonoBehaviour {
-	float size;											// Size in Unity units (used for placement)
-	static Dictionary<string, int> COST = new Dictionary<string, int>() {
-		{ "closed", 0 }, // Non-traversable
-		{ "open", 1 }
+	static Dictionary<string, PathfinderTileCost> COST = new Dictionary<string, PathfinderTileCost>() {
+		{ "closed", new PathfinderTileCost("closed", 0, Color.green) },
+		{ "open", new PathfinderTileCost("open", 1, Color.red) }
 	};
+
+	float size;											// Size in Unity units (used for placement)
 
 	public Color open = new Color(0, 255, 0, 1);     	// Color displayed when tile is available
 	public Color closed = new Color(255, 0, 0, 1);   	// Tile is not traversable
-	public int cost = COST["open"];                     // Movement cost 
+	public PathfinderTileCost cost = COST["open"];                     // Movement cost 
 	public int clearance;								
 	public bool ledge;
 	public Vector2 xy;
@@ -42,12 +58,7 @@ public class PathfinderTile : MonoBehaviour {
 
 	public void SetCost (string newCost) {
 		cost = COST[newCost];
-
-		if (cost == 0) {
-			GetComponent<SpriteRenderer>().color = closed;
-		} else {
-			GetComponent<SpriteRenderer>().color = open;
-		}
+		GetComponent<SpriteRenderer>().color = cost.color;
 	}
 
 	public void SetLedge (bool isLedge) {

@@ -61,7 +61,7 @@ public class PathfinderMap : MonoBehaviour {
 		for (int y = 0, lY = GetHeightInTiles(); y < lY; y++) {
 			for (int x = 0, lX = GetWidthInTiles(); x < lX; x++) {
 				PathfinderTile tile = GetTile(x, y);
-				if (tile.cost == 1 && Blocked(x, y + 1) && y + 1 != lY) {	// If the bottom ledge is blocked or bottom of y axis
+				if (tile.cost.weight == 1 && Blocked(x, y + 1) && y + 1 != lY) {	// If the bottom ledge is blocked or bottom of y axis
 					tile.SetLedge(true);
 					ledges.Add(tile);
 					
@@ -223,7 +223,7 @@ public class PathfinderMap : MonoBehaviour {
 
 	public bool Blocked (int x, int y) {
 		if (OutOfBounds(x, y)) return true;
-		if (GetTile(x, y).cost == 0) return true;
+		if (GetTile(x, y).cost.weight == 0) return true;
 		
 		return false;
 	}
