@@ -57,7 +57,7 @@ public class PathfinderGrid : MonoBehaviour {
 			}
 		}
 		
-		// Run clearanc and collision setup here since collision data is ready
+		// Run clearance and collision setup here since collision data is ready
 		pathCollision.Init(this);
 		pathClearance.Init(this, pathCollision);
 		
