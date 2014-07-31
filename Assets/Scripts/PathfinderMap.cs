@@ -73,8 +73,8 @@ public class PathfinderMap : MonoBehaviour {
 		
 		// For each ledge, add a link to all ledge neighbors
 		for (int i = 0, l = ledges.Count; i < l; i++) {
-			int x = (int)ledges[i].xy.x;
-			int y = (int)ledges[i].xy.y;
+			int x = ledges[i].x;
+			int y = ledges[i].y;
 			
 			// Left neighbor check
 			if (!Blocked(x - 1, y)) {
@@ -95,16 +95,16 @@ public class PathfinderMap : MonoBehaviour {
 		List<PlatformLedgePoint> ledgePoints = new List<PlatformLedgePoint>();
 		for (int i = 0, l = corners.Count; i < l; i++) {
 			// Discover the direction the tile is facing
-			int direction = Blocked((int)corners[i].xy.x - 1, (int)corners[i].xy.y + 1) ? 1 : -1;
+			int direction = Blocked(corners[i].x - 1, corners[i].y + 1) ? 1 : -1;
 			
 			// Step over the facing direction 1 tile
-			PathfinderTile overhang = GetTile((int)corners[i].xy.x + direction, (int)corners[i].xy.y);
+			PathfinderTile overhang = GetTile(corners[i].x + direction, corners[i].y);
 			
 			// Shoot a raycast straight down to the end of the boundary to look for a fall
 			RaycastHit2D hit = Physics2D.Raycast(
 				overhang.transform.position, 
 				-Vector2.up, 
-				(GetHeightInTiles() - overhang.xy.y) * tileSize,
+				(GetHeightInTiles() - overhang.y) * tileSize,
 				whatIsCollision);
 			
 			// If we hit something add a fall link at the hit target
@@ -118,7 +118,7 @@ public class PathfinderMap : MonoBehaviour {
 			hit = Physics2D.Raycast(
 				overhang.transform.position,
 				new Vector2(0.2f * direction, -0.5f),
-				(GetHeightInTiles() - overhang.xy.y) * tileSize,
+				(GetHeightInTiles() - overhang.y) * tileSize,
 				whatIsCollision
 				);
 			
@@ -131,12 +131,12 @@ public class PathfinderMap : MonoBehaviour {
 			}
 
 			// Creata a ledge point for evaluating corner jumps
-			Transform targetTrans = GetTile((int)corners[i].xy.x, (int)corners[i].xy.y).transform;
+			Transform targetTrans = GetTile((int)corners[i].x, (int)corners[i].y).transform;
 			GameObject pointObj = (GameObject)Instantiate(Resources.Load("PlatformLedge"));
 			PlatformLedgePoint point = pointObj.GetComponent<PlatformLedgePoint>();
 			pointObj.transform.position = targetTrans.position;
-			point.x = (int)corners[i].xy.x;
-			point.y = (int)corners[i].xy.y;
+			point.x = (int)corners[i].x;
+			point.y = (int)corners[i].y;
 			point.direction = direction;
 			ledgePoints.Add(point);
 
@@ -156,7 +156,7 @@ public class PathfinderMap : MonoBehaviour {
 			for (int j = 0, jL = jumpPoints.Length; j < jL; j++) {
 				int distance = (int)Mathf.Floor(Vector3.Distance(ledgePoints[i].transform.position, jumpPoints[j].transform.position));
 
-				ledgePoints[i].enabled = false;
+//				ledgePoints[i].enabled = false;
 
 				RaycastHit2D hit = Physics2D.Raycast(
 					ledgePoints[i].transform.position,
@@ -164,9 +164,12 @@ public class PathfinderMap : MonoBehaviour {
 					distance,
 					whatIsCollision);
 
-				ledgePoints[i].enabled = true;
-
-				if (hit.collider) continue;
+//				ledgePoints[i].enabled = true;
+				
+				if (hit.collider) {
+//					Debug.Log(hit.collider.transform.position);
+					continue;
+				}
 
 				PathfinderTile tile = GetTile(ledgePoints[i].x, ledgePoints[i].y);
 				PlatformLedgePoint tileTarget = jumpPoints[j].collider.GetComponent<PlatformLedgePoint>();

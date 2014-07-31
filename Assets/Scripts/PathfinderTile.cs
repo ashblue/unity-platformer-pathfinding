@@ -30,11 +30,13 @@ public class PathfinderTile : MonoBehaviour {
 	public PathfinderTileCost cost = COST["open"];                     // Movement cost 
 	public int clearance;								
 	public bool ledge;
-	public Vector2 xy;
+	public int x;
+	public int y;
 	public List<PathfinderLink> links = new List<PathfinderLink>();
 
-	public void Init (int x, int y, float sizeVal, Vector3 offset) {
-		xy = new Vector2(x, y);
+	public void Init (int xVal, int yVal, float sizeVal, Vector3 offset) {
+		x = xVal;
+		y = yVal;
 		size = sizeVal;
 
 		GetComponent<SpriteRenderer>().color = open;

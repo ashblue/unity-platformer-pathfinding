@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PathfinderLinkMeta {
-	static float colorAlpha = 0.3f;
+	static float colorAlpha = 0.5f;
 	public string name;
 	public int weight;
 	public Color color;
