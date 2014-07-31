@@ -144,30 +144,27 @@ public class PathfinderMap : MonoBehaviour {
 
 		// Loop through all ledge corners
 		for (int i = 0, l = ledgePoints.Count; i < l; i++) {
+			// @TODO Swap for a circle cast
 			RaycastHit2D[] jumpPoints = Physics2D.BoxCastAll(
-				ledgePoints[i].transform.position + new Vector3((jumpDistance / 2) * ledgePoints[i].direction, 0, 0),
-				new Vector2(jumpDistance, jumpDistance),
+				ledgePoints[i].transform.position,
+				new Vector2(1, jumpDistance),
 				0,
-				Vector2.up * -0.1f, // Shift down slightly to activate the collision test
-				Mathf.Infinity,
+				new Vector2(jumpDistance * ledgePoints[i].direction, 0), // Shift down slightly to activate the collision test
+				jumpDistance,
 				whatIsJumpPoint);
 
-
 			for (int j = 0, jL = jumpPoints.Length; j < jL; j++) {
+				Debug.Log(jumpPoints[j].transform.position);
 				int distance = (int)Mathf.Floor(Vector3.Distance(ledgePoints[i].transform.position, jumpPoints[j].transform.position));
-
-//				ledgePoints[i].enabled = false;
 
 				RaycastHit2D hit = Physics2D.Raycast(
 					ledgePoints[i].transform.position,
-					new Vector2(0.2f * ledgePoints[i].direction, -0.5f),
-					distance,
+					(ledgePoints[i].transform.position - jumpPoints[j].transform.position).normalized,
+					jumpDistance,
 					whatIsCollision);
 
-//				ledgePoints[i].enabled = true;
-				
 				if (hit.collider) {
-//					Debug.Log(hit.collider.transform.position);
+					Debug.Log(hit.collider.transform.position);
 					continue;
 				}
 
