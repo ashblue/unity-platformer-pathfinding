@@ -4,27 +4,20 @@ using System.Collections;
 public class PathfinderCollision {
 	PathfinderMap grid;
 
-	public void Init (PathfinderMap gridTarget) {
-		grid = gridTarget;
-	}
+	public void UpdateCollision (PathfinderMap map, LayerMask whatIsCollision) {
+		// Populate collision data
+		for (int y = 0, l = map.GetHeightInTiles(); y < l; y++) {
+			for (int x = 0, lX = map.GetWidthInTiles(); x < lX; x++) {
+				PathfinderTile tile = map.GetTile(x, y);
 
-	/**
-	 * Returns the bottom right edge of a square from a specific point. Note: All squares are drawn from the top
-	 * left to bottom right
-	 * @param xStart Bottom right start point of the square's edge
-	 * @param yStart Bottom left start point of the square's edge
-	 * @param distance
-	 */
-	public bool IsEdgeOpen (int xStart, int yStart, int distance) {
-		int count = 0;
+				float offset = map.tileSize / 2;
+				Vector3 pos = tile.transform.position;
+				Vector2 topLeft = new Vector2(pos.x - offset, pos.y - offset);
+				Vector2 bottomRight = new Vector2(pos.x + offset, pos.y + offset);
 
-		// @TODO A bit messy, a cleaner way of doing this?
-		for (int y = yStart, lY = yStart + distance, thresholdY = lY - 1; y < lY; y++) {
-			for (int x = xStart, lX = xStart + distance, thresholdX = lX - 1; x < lX; x++) {
-				if ((x >= thresholdX || y >= thresholdY) && !grid.Blocked(x, y)) count += 1;
+				bool overlap = Physics2D.OverlapArea(topLeft, bottomRight, whatIsCollision);
+				if (overlap) tile.SetCost("closed");
 			}
 		}
-
-		return count == (distance - 1) * 2 + 1;
 	}
 }

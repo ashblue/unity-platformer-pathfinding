@@ -4,12 +4,13 @@ using System.Collections.Generic;
 
 // @TODO Feels like this should be in a namespace
 public class PathfinderMap : MonoBehaviour {
+	// Evaluated data from the bounding box
 	GameObject boundingBox;
 	Vector3 boxPos;
 	float boxWidth;
 	float boxHeight;
 
-	PathfinderClearance pathClearance;
+	PathfinderClearance pathClearance = new PathfinderClearance();
 	PathfinderCollision pathCollision = new PathfinderCollision();
 
 	public float tileSize = 1;
@@ -48,19 +49,13 @@ public class PathfinderMap : MonoBehaviour {
 				grid[y, x].Init(x, y, tileSize, boxPos);
 			}
 		}
-
-		// Populate collision data
-		for (int y = 0, l = GetHeightInTiles(); y < l; y++) {
-			for (int x = 0, lX = GetWidthInTiles(); x < lX; x++) {
-				GetTile(x, y).UpdateCollision(whatIsCollision);
-			}
-		}
 		
 		// Run clearance and collision setup here since collision data is ready
-		pathCollision.Init(this);
-		pathClearance = new PathfinderClearance(this, pathCollision);
+		pathCollision.UpdateCollision(this, whatIsCollision);
+		pathClearance.UpdateClearance(this);
 		
 		// Find all valid pathways for gravity based pathfinding
+		// @TODO Traversing and creating the links could be much more modular
 		List<PathfinderTile> ledges = new List<PathfinderTile>();
 		List<PathfinderTile> corners = new List<PathfinderTile>();
 		for (int y = 0, lY = GetHeightInTiles(); y < lY; y++) {
@@ -179,7 +174,7 @@ public class PathfinderMap : MonoBehaviour {
 			}
 		}
 
-		// @TODO Cleanup leftover ledge corner colliders
+		// Cleanup leftover ledge corner colliders
 		for (int i = 0, l = ledgePoints.Count; i < l; i++) {
 			Destroy(ledgePoints[i].gameObject);
 		}
@@ -235,5 +230,25 @@ public class PathfinderMap : MonoBehaviour {
 
 	public PathfinderTile GetTile (int x, int y) {
 		return grid[y, x];
+	}
+
+	/**
+	 * Returns the bottom right edge of a square from a specific point. Note: All squares are drawn from the top
+	 * left to bottom right
+	 * @param xStart Bottom right start point of the square's edge
+	 * @param yStart Bottom left start point of the square's edge
+	 * @param distance
+	 */
+	public bool IsEdgeOpen (int xStart, int yStart, int distance) {
+		int count = 0;
+		
+		// @TODO A bit messy, a cleaner way of doing this?
+		for (int y = yStart, lY = yStart + distance, thresholdY = lY - 1; y < lY; y++) {
+			for (int x = xStart, lX = xStart + distance, thresholdX = lX - 1; x < lX; x++) {
+				if ((x >= thresholdX || y >= thresholdY) && !Blocked(x, y)) count += 1;
+			}
+		}
+		
+		return count == (distance - 1) * 2 + 1;
 	}
 }
