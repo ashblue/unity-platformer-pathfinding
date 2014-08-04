@@ -52,8 +52,10 @@ public class AStarTest : MonoBehaviour {
 			List<Pathfinder.Step> path = pathfinder.FindPath(startTile, endTile);
 
 			GameObject newTile;
-			for (int i = 0, l = path.Count; i < l; i++) {
-				newTile = Instantiate(debugTile, path[i].tile.transform.position, Quaternion.identity) as GameObject;
+			if (path != null) {
+				for (int i = 0, l = path.Count; i < l; i++) {
+					newTile = Instantiate(debugTile, path[i].tile.transform.position, Quaternion.identity) as GameObject;
+				}
 			}
 		}
 	}
