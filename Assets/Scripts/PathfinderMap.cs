@@ -251,4 +251,16 @@ public class PathfinderMap : MonoBehaviour {
 		
 		return count == (distance - 1) * 2 + 1;
 	}
+
+	public List<PathfinderTile> GetNeighbors (int x, int y) {
+		List<PathfinderTile> neighbors = new List<PathfinderTile>();
+		
+		// Check left, right, top, bottom
+		if (!Blocked(x + 1, y)) neighbors.Add(GetTile(x + 1, y));
+		if (!Blocked(x - 1, y)) neighbors.Add(GetTile(x - 1, y));
+		if (!Blocked(x, y + 1)) neighbors.Add(GetTile(x, y + 1));
+		if (!Blocked(x, y - 1)) neighbors.Add(GetTile(x, y - 1));
+		
+		return neighbors;
+	}
 }
