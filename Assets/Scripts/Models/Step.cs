@@ -9,6 +9,7 @@ namespace Pathfinder {
 		public int totalSteps;
 		public int totalCost;
 		public Pathfinder.Step parent;
+		public string linkType;
 
 		public Step (PathfinderTile begin, PathfinderTile end, int steps, Step parentStep = null) {
 			tile = begin;

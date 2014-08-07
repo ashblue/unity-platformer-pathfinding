@@ -252,6 +252,18 @@ public class PathfinderMap : MonoBehaviour {
 		return count == (distance - 1) * 2 + 1;
 	}
 
+	public List<PathfinderTile> GetLinks (int x, int y) {
+		List<PathfinderTile> neighbors = new List<PathfinderTile>();
+		
+		// Check left, right, top, bottom
+		if (!Blocked(x + 1, y)) neighbors.Add(GetTile(x + 1, y));
+		if (!Blocked(x - 1, y)) neighbors.Add(GetTile(x - 1, y));
+		if (!Blocked(x, y + 1)) neighbors.Add(GetTile(x, y + 1));
+		if (!Blocked(x, y - 1)) neighbors.Add(GetTile(x, y - 1));
+		
+		return neighbors;
+	}
+
 	public List<PathfinderTile> GetNeighbors (int x, int y) {
 		List<PathfinderTile> neighbors = new List<PathfinderTile>();
 		
@@ -262,5 +274,17 @@ public class PathfinderMap : MonoBehaviour {
 		if (!Blocked(x, y - 1)) neighbors.Add(GetTile(x, y - 1));
 		
 		return neighbors;
+	}
+
+	public PathfinderTile WorldToGrid (Vector2 pos) {
+		// Check for out of bounds
+		if (pos.x < boxPos.x || pos.y < boxPos.y || pos.x > boxPos.x + boxWidth || pos.y > boxPos.y + boxHeight)
+			return null;
+
+		int x = (int)((pos.x - boxPos.x) / tileSize);
+		int y = (int)((pos.y - boxPos.y) / tileSize);
+
+		if (Blocked(x, y)) return null;
+		return GetTile(x, y);
 	}
 }

@@ -75,7 +75,11 @@ public class PathfinderTile : MonoBehaviour {
 		ledge = isLedge;
 
 		if (ledge)
-			GetComponent<SpriteRenderer>().color = Color.yellow;
+			SetColor(Color.yellow);
+	}
+
+	public void SetColor (Color color) {
+		GetComponent<SpriteRenderer>().color = color;
 	}
 
 	public void AddLink (PathfinderTile target, int weight, int distance, string type = "ground") {

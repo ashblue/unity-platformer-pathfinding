@@ -4,21 +4,23 @@ using System.Collections.Generic;
 
 namespace Pathfinder {
 	public class AStar {
-		PathfinderMap map; 								// Current target map reference
-		List<Step> closed; 								// Taken steps
-		List<Step> open; 								// Available steps
+		public PathfinderMap map; 								// Current target map reference
+		public List<Step> closed; 								// Taken steps
+		public List<Step> open; 								// Available steps
 		
 		// @TODO Should probably track something other than a step, perhaps StepLog. As steps will change
 		public List<Step> history; 							// Debugging list of all searched step items
 		
-		int step; 										// Step count
+		public int step; 										// Step count
 		public static int maxSearchDistance = 100; 		// Max number of tiles to search before exiting
-		
-		void Reset () {
+		public int searchCount;
+
+		public void Reset () {
 			closed = new List<Step>();
 			open = new List<Step>();
 			history = new List<Step>();
 			step = 0;
+			searchCount = 0;
 		}
 		
 		public void SetMap (PathfinderMap targetMap) {
@@ -27,26 +29,27 @@ namespace Pathfinder {
 		}
 		
 		// Log a new item to the history records
-		void AddHistory (Step step, string group, string action) {
+		public void AddHistory (Step step, string group, string action) {
 			
 		}
 		
-		void AddOpen (Step step) {
+		public Step AddOpen (Step step) {
 			AddHistory(step, "open", "add");
 			open.Add(step);
+			return step;
 		}
 		
-		void RemoveOpen (Step step) {
+		public void RemoveOpen (Step step) {
 			AddHistory(step, "open", "remove");
 			open.Remove(step);
 		}
 		
-		Step GetOpen (int x, int y) {
+		public Step GetOpen (int x, int y) {
 			return open.Find(a => a.tile.x == x && a.tile.y == y);
 		}
 		
 		// Retrieve the best possible open tile
-		Step GetBestOpen () {
+		public Step GetBestOpen () {
 			int bestI = 0;
 			for (int i = 0, l = open.Count; i < l; i++) {
 				if (open[i].totalCost < open[bestI].totalCost) bestI = i;
@@ -55,16 +58,16 @@ namespace Pathfinder {
 			return open[bestI];
 		}
 		
-		Step GetClosed (int x, int y) {
+		public Step GetClosed (int x, int y) {
 			return closed.Find(i => i.tile.x == x && i.tile.y == y);
 		}
 		
-		void AddClosed (Step step) {
+		public void AddClosed (Step step) {
 			AddHistory(step, "closed", "add");
 			closed.Add(step);
 		}
 		
-		List<Step> BuildPath (Step step, List<Step> stack) {
+		public List<Step> BuildPath (Step step, List<Step> stack) {
 			stack.Add(step);
 			
 			if (step.parent != null) {
@@ -73,12 +76,8 @@ namespace Pathfinder {
 				return stack;
 			}
 		}
-		
-		public List<Step> FindPath (PathfinderTile start, PathfinderTile end) {
-			// @TODO On the player implementation side
-			// Translate target position into a grid tile location
-			// Translate player's current location into a grid tile location
 
+		public List<Step> FindPath (PathfinderTile start, PathfinderTile end) {
 			Step current; 						// Best open tile
 			List<PathfinderTile> neighbors; 	// Dump of nearby neighbors
 			Step neighborRecord; 				// Are any pre-existing neighbor records available?
@@ -90,6 +89,9 @@ namespace Pathfinder {
 			AddOpen(new Step(start, end, step));
 
 			while (open.Count != 0) {
+				searchCount += 1;
+				if (searchCount > maxSearchDistance) return null;
+
 				step++;
 				current = GetBestOpen();
 
