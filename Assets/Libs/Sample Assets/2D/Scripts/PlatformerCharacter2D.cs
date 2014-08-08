@@ -4,7 +4,7 @@ public class PlatformerCharacter2D : MonoBehaviour
 {
 	bool facingRight = true;							// For determining which way the player is currently facing.
 
-	[SerializeField] float maxSpeed = 10f;				// The fastest the player can travel in the x axis.
+	public float maxSpeed = 10f;				// The fastest the player can travel in the x axis.
 	[SerializeField] float jumpForce = 400f;			// Amount of force added when the player jumps.	
 
 	[Range(0, 1)]
@@ -40,8 +40,18 @@ public class PlatformerCharacter2D : MonoBehaviour
 		anim.SetFloat("vSpeed", rigidbody2D.velocity.y);
 	}
 
+	public void Move (float move, bool crouch, bool jump) {
+		// If the input is moving the player right and the player is facing left...
+		if(rigidbody2D.velocity.x > 0 && !facingRight)
+			// ... flip the player.
+			Flip();
+		// Otherwise if the input is moving the player left and the player is facing right...
+		else if(rigidbody2D.velocity.x < 0 && facingRight)
+			// ... flip the player.
+			Flip();
+	}
 
-	public void Move(float move, bool crouch, bool jump)
+	public void MoveArchive (float move, bool crouch, bool jump)
 	{
 
 

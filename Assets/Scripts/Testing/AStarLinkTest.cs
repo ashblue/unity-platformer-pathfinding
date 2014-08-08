@@ -6,13 +6,21 @@ public class AStarLinkTest : MonoBehaviour {
 	Pathfinder.AStarLinks pathfinder;
 	PathfinderMap map;
 	List<Pathfinder.Step> path;
+	PlatformerCharacter2D moveScript;
 
+	string moveType;
+	Pathfinder.Step tileCurrent;
+	Pathfinder.Step tileGoal;
+
+	[SerializeField] int direction; // Movement direction for the player
+
+	// Delay between finding a new path to the target
 	float updateDelay = 1;
 	float delay = 1;
 
-	Rect mousePos = new Rect(10, Screen.width - 50, 20, 30);
-	int mouseX;
-	int mouseY;
+	void Awake () {
+		moveScript = GetComponent<PlatformerCharacter2D>();
+	}
 
 	void Start () {
 		// Initialize AStar Pathfinder
@@ -22,44 +30,108 @@ public class AStarLinkTest : MonoBehaviour {
 	}
 
 	void Update () {
-		// Get the mouse position every 1 second
-		delay -= Time.deltaTime;
-		if (delay > 0) return;
-		delay = updateDelay;
+		if (tileCurrent != null) Move();
 
+		if (Input.GetMouseButtonDown(0)) {
+			DiscoverPath();
+		}
+	}
+
+	void DiscoverPath () {
 		// Use mouse position to discover a ledge
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		RaycastHit2D ledgeHit = LedgeCheck(mousePos);
 		if (!ledgeHit.collider) return;
-
+		
 		// Get the current target tile
 		PathfinderTile targetTile = map.GetTileByPos(ledgeHit.point);
 		if (!targetTile.ledge) return;
-
+		
 		// Get the player's start location
 		ledgeHit = LedgeCheck(transform.position);
 		if (!ledgeHit.collider) return;
-
+		
 		// @TODO Check to make sure player is grounded
 		// Verify the player is on a valid ledge
 		PathfinderTile originTile = map.GetTileByPos(ledgeHit.point);
 		if (originTile.ledge == null) return;
-
+		
 		// If there is existing path data clear it
 		if (path != null) {
 			for (int i = 0, l = path.Count; i < l; i++) {
 				path[i].tile.SetColor(Color.yellow);
 			}
 		}
-
+		
 		// Execute find path
 		// Visually display the path result
 		path = pathfinder.FindPath(originTile, targetTile);
 		if (path == null) return;
 		for (int i = 0, l = path.Count; i < l; i++) {
 			path[i].tile.SetColor(Color.cyan);
-			Debug.Log(path[i].linkType);
 		}
+
+		// Grab the first tile for traversal
+		NextTile();
+	}
+
+	// Has the intended destination been reached?
+	// @TODO Consider testing range instead of direction (are they on the tile)
+	bool IsDestination () {
+		float dif = transform.position.x - tileCurrent.tile.transform.position.x;
+
+		// Have we passed it? Then get a new tile
+		if ((direction == 1 && dif > 0) || (direction == -1 && dif < 0)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	void Move () {
+		// Move towards the target tile
+		rigidbody2D.velocity = new Vector2(moveScript.maxSpeed * direction, rigidbody2D.velocity.y);
+
+		if (IsDestination())
+			NextTile();
+
+//		if (moveType == "ground") {
+			// Move in direction from current tile to goal
+
+//		} else if (moveType == "fall") {
+			// Move forward until above the fall, tile
+			// Then descend until touching it
+//		} else if (moveType == "runoff" || moveType == "jump") {
+			// jump to target point
+//		}
+
+		// If we are at the goal, get the next move tile
+	}
+
+	void NextTile () {
+		// if tiles are available get the next tile
+//		if (path == null || path.Count == 0 || tileCurrent != null) return;
+
+		if (path.Count == 0) {
+			tileCurrent = null;
+			rigidbody2D.velocity = Vector2.zero;
+			return;
+		}
+
+		// @TODO Move to an array list for pop methods
+		// Get the next tile
+		tileCurrent = path[path.Count - 1];
+		path.RemoveAt(path.Count - 1);
+		moveType = tileCurrent.linkType;
+
+		// Only compare against the player if we are out of tiles (prevents accidental movement overlap)
+		if (path.Count > 0) {
+			direction = tileCurrent.tile.transform.position.x - path[0].tile.transform.position.x > 0 ? -1 : 1;
+		} else {
+			direction = transform.position.x - tileCurrent.tile.transform.position.x > 0 ? -1 : 1;
+		}
+
+		tileCurrent.tile.SetColor(Color.yellow);
 	}
 
 //	void OnGUI () {

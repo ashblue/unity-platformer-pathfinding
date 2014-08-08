@@ -27,7 +27,7 @@ namespace Pathfinder {
 				if (current.tile.x == end.x && current.tile.y == end.y) {
 //					return BuildPath(current, new List<Step>());
 					List<Step> builtPath = BuildPath(current, new List<Step>());
-					builtPath.Reverse();
+//					builtPath.Reverse();
 					return builtPath;
 				}
 				
