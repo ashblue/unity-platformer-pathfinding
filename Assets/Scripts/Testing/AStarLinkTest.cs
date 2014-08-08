@@ -7,12 +7,13 @@ public class AStarLinkTest : MonoBehaviour {
 	PathfinderMap map;
 	List<Pathfinder.Step> path;
 	PlatformerCharacter2D moveScript;
+	JumpTween jumpScript;
 
 	string moveType;
 	Pathfinder.Step tileCurrent; // @TODO Rename step current
 	Pathfinder.Step tileGoal; // @TODO Rename step goal
 
-	[SerializeField] int direction; // Movement direction for the player
+	int direction; // Movement direction for the player
 
 	// Delay between finding a new path to the target
 	float updateDelay = 1;
@@ -20,6 +21,7 @@ public class AStarLinkTest : MonoBehaviour {
 
 	void Awake () {
 		moveScript = GetComponent<PlatformerCharacter2D>();
+		jumpScript = GetComponent<JumpTween>();
 	}
 
 	void Start () {
@@ -103,13 +105,15 @@ public class AStarLinkTest : MonoBehaviour {
 
 			// Player is grounded and very close to goal tile, must have landed at proper location
 			} else if (moveScript.grounded && Vector3.Distance(transform.position, tileCurrent.tile.transform.position) < 1) {
-				Debug.Log ("Next Tile");
 				NextTile();
 
 			// Must be falling, stop forward movement immediately
 			} else {
 				rigidbody2D.velocity = new Vector2(0.2f, rigidbody2D.velocity.y);
 			}
+		
+		} else if (!rigidbody2D.isKinematic) { // Treat all other tile types as jump
+			jumpScript.JumpTo(tileCurrent.tile.transform.position, "NextTile");
 		}
 
 
@@ -144,8 +148,6 @@ public class AStarLinkTest : MonoBehaviour {
 		path.RemoveAt(path.Count - 1);
 		moveType = tileCurrent.linkType;
 
-		Debug.Log(tileCurrent.tile.x + " " + tileCurrent.tile.y);
-
 		// Only compare against the player if we are out of tiles (prevents accidental movement overlap)
 		if (path.Count > 0) {
 			direction = tileCurrent.tile.transform.position.x - path[path.Count - 1].tile.transform.position.x > 0 ? -1 : 1;
@@ -156,10 +158,6 @@ public class AStarLinkTest : MonoBehaviour {
 		// Remove coloring from tile for debug purposes
 		tileCurrent.tile.SetColor(Color.yellow);
 	}
-
-//	void OnGUI () {
-//		GUI.Label(mousePos, mouseX + " " + mouseY);
-//	}
 
 	RaycastHit2D LedgeCheck (Vector3 pos) {
 		RaycastHit2D ledgeHit = Physics2D.Raycast(
