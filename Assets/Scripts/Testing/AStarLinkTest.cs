@@ -9,8 +9,8 @@ public class AStarLinkTest : MonoBehaviour {
 	PlatformerCharacter2D moveScript;
 
 	string moveType;
-	Pathfinder.Step tileCurrent;
-	Pathfinder.Step tileGoal;
+	Pathfinder.Step tileCurrent; // @TODO Rename step current
+	Pathfinder.Step tileGoal; // @TODO Rename step goal
 
 	[SerializeField] int direction; // Movement direction for the player
 
@@ -90,10 +90,28 @@ public class AStarLinkTest : MonoBehaviour {
 
 	void Move () {
 		// Move towards the target tile
-		rigidbody2D.velocity = new Vector2(moveScript.maxSpeed * direction, rigidbody2D.velocity.y);
+		if (moveType == "ground") {
+			rigidbody2D.velocity = new Vector2(moveScript.maxSpeed * direction, rigidbody2D.velocity.y);
+			
+			if (IsDestination())
+				NextTile();
 
-		if (IsDestination())
-			NextTile();
+		} else if (moveType == "fall") {
+			// Move forward if we haven't passed the fall point, otherwise the player will undershoot the ledge
+			if (!IsDestination()) {
+				rigidbody2D.velocity = new Vector2(moveScript.maxSpeed * direction, rigidbody2D.velocity.y);
+
+			// Player is grounded and very close to goal tile, must have landed at proper location
+			} else if (moveScript.grounded && Vector3.Distance(transform.position, tileCurrent.tile.transform.position) < 1) {
+				Debug.Log ("Next Tile");
+				NextTile();
+
+			// Must be falling, stop forward movement immediately
+			} else {
+				rigidbody2D.velocity = new Vector2(0.2f, rigidbody2D.velocity.y);
+			}
+		}
+
 
 //		if (moveType == "ground") {
 			// Move in direction from current tile to goal
@@ -107,6 +125,8 @@ public class AStarLinkTest : MonoBehaviour {
 
 		// If we are at the goal, get the next move tile
 	}
+
+	// @TODO Add a method to lerp down the character's movement so it doesn't suddenly stop
 
 	void NextTile () {
 		// if tiles are available get the next tile
@@ -124,13 +144,16 @@ public class AStarLinkTest : MonoBehaviour {
 		path.RemoveAt(path.Count - 1);
 		moveType = tileCurrent.linkType;
 
+		Debug.Log(tileCurrent.tile.x + " " + tileCurrent.tile.y);
+
 		// Only compare against the player if we are out of tiles (prevents accidental movement overlap)
 		if (path.Count > 0) {
-			direction = tileCurrent.tile.transform.position.x - path[0].tile.transform.position.x > 0 ? -1 : 1;
+			direction = tileCurrent.tile.transform.position.x - path[path.Count - 1].tile.transform.position.x > 0 ? -1 : 1;
 		} else {
 			direction = transform.position.x - tileCurrent.tile.transform.position.x > 0 ? -1 : 1;
 		}
 
+		// Remove coloring from tile for debug purposes
 		tileCurrent.tile.SetColor(Color.yellow);
 	}
 
